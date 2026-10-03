@@ -1,0 +1,7 @@
+{
+  "name": "Tic Tac Toe Pro",
+  "description": "A polished Tic Tac Toe game with local multiplayer, AI opponent with adjustable difficulty, and animated turns.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+

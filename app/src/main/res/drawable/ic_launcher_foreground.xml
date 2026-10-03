@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Tic Tac Toe Grid -->
+    <path
+        android:fillColor="#00F2FE"
+        android:pathData="M38,18h4v72h-4zM66,18h4v72h-4zM18,38h72v4h-72zM18,66h72v4h-72z"/>
+    <!-- X mark -->
+    <path
+        android:fillColor="#00F2FE"
+        android:pathData="M24,24l10,10m0,-10l-10,10"
+        android:strokeWidth="4"
+        android:strokeColor="#00F2FE"
+        android:strokeLineCap="round"/>
+    <!-- O mark -->
+    <path
+        android:strokeColor="#FF3366"
+        android:strokeWidth="4"
+        android:fillColor="#00000000"
+        android:pathData="M78,78m-7,0a7,7 0,1 1,14 0a7,7 0,1 1,-14 0"/>
+</vector>
