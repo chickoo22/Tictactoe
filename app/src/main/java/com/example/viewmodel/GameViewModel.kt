@@ -7,10 +7,14 @@ import com.example.ai.TicTacToeAi
 import com.example.data.AppDatabase
 import com.example.data.GameMatchEntity
 import com.example.data.GameRepository
+import com.example.model.BoardStyle
+import com.example.model.ColorPalette
 import com.example.model.Difficulty
 import com.example.model.GameMode
 import com.example.model.GameStatus
+import com.example.model.MarkerStyle
 import com.example.model.Player
+import com.example.model.ScoreState
 import com.example.model.checkWinner
 import com.google.android.gms.ads.MobileAds
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,11 +34,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val dao = AppDatabase.getDatabase(application).gameDao()
         repository = GameRepository(dao)
 
-        // Initialize Google Mobile Ads SDK for AdMob monetization
         try {
             MobileAds.initialize(application) {}
         } catch (e: Exception) {
-            // Ignored if test context / offline
+            // Ignored if offline/test
         }
     }
 
@@ -66,8 +69,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val _difficulty = MutableStateFlow(Difficulty.MEDIUM)
     val difficulty: StateFlow<Difficulty> = _difficulty.asStateFlow()
 
-    private val _scoreState = MutableStateFlow(com.example.model.ScoreState())
-    val scoreState: StateFlow<com.example.model.ScoreState> = _scoreState.asStateFlow()
+    private val _scoreState = MutableStateFlow(ScoreState())
+    val scoreState: StateFlow<ScoreState> = _scoreState.asStateFlow()
 
     private val _isAiThinking = MutableStateFlow(false)
     val isAiThinking: StateFlow<Boolean> = _isAiThinking.asStateFlow()
@@ -81,6 +84,16 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val _hapticsEnabled = MutableStateFlow(true)
     val hapticsEnabled: StateFlow<Boolean> = _hapticsEnabled.asStateFlow()
 
+    // Theme Engine States
+    private val _selectedPalette = MutableStateFlow(ColorPalette.NEON_CYBER)
+    val selectedPalette: StateFlow<ColorPalette> = _selectedPalette.asStateFlow()
+
+    private val _boardStyle = MutableStateFlow(BoardStyle.GLASS)
+    val boardStyle: StateFlow<BoardStyle> = _boardStyle.asStateFlow()
+
+    private val _markerStyle = MutableStateFlow(MarkerStyle.CLASSIC)
+    val markerStyle: StateFlow<MarkerStyle> = _markerStyle.asStateFlow()
+
     fun updatePlayerNames(xName: String, oName: String) {
         if (xName.isNotBlank()) _playerXName.value = xName
         if (oName.isNotBlank()) _playerOName.value = oName
@@ -88,6 +101,18 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setHapticsEnabled(enabled: Boolean) {
         _hapticsEnabled.value = enabled
+    }
+
+    fun updatePalette(palette: ColorPalette) {
+        _selectedPalette.value = palette
+    }
+
+    fun updateBoardStyle(style: BoardStyle) {
+        _boardStyle.value = style
+    }
+
+    fun updateMarkerStyle(style: MarkerStyle) {
+        _markerStyle.value = style
     }
 
     fun makeMove(index: Int) {
@@ -182,7 +207,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun resetScores() {
-        _scoreState.value = com.example.model.ScoreState()
+        _scoreState.value = ScoreState()
         resetGame()
     }
 

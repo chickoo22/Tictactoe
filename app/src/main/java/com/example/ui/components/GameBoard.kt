@@ -24,25 +24,43 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.model.BoardStyle
+import com.example.model.ColorPalette
+import com.example.model.MarkerStyle
 import com.example.model.Player
-import com.example.ui.theme.PrimaryCyan
-import com.example.ui.theme.SecondaryCoral
 
 @Composable
 fun GameBoard(
     board: List<Player?>,
     winningCombination: List<Int>?,
+    colorPalette: ColorPalette,
+    boardStyle: BoardStyle,
+    markerStyle: MarkerStyle,
     onCellClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val containerBg = when (boardStyle) {
+        BoardStyle.GLASS -> colorPalette.surface.copy(alpha = 0.85f)
+        BoardStyle.NEON_GRID -> colorPalette.surface
+        BoardStyle.SOLID_CARD -> colorPalette.surface
+    }
+
+    val borderWidth = when (boardStyle) {
+        BoardStyle.GLASS -> 1.5.dp
+        BoardStyle.NEON_GRID -> 2.dp
+        BoardStyle.SOLID_CARD -> 1.dp
+    }
+
     Box(
         modifier = modifier
             .aspectRatio(1f)
             .padding(16.dp)
             .clip(RoundedCornerShape(24.dp))
-            .background(MaterialTheme.colorScheme.surface)
-            .border(2.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.4f), RoundedCornerShape(24.dp))
+            .background(containerBg)
+            .border(borderWidth, colorPalette.primary.copy(alpha = 0.4f), RoundedCornerShape(24.dp))
             .padding(16.dp),
         contentAlignment = Alignment.Center
     ) {
@@ -65,6 +83,9 @@ fun GameBoard(
                         TicTacToeCell(
                             player = player,
                             isWinningCell = isWinningCell,
+                            colorPalette = colorPalette,
+                            boardStyle = boardStyle,
+                            markerStyle = markerStyle,
                             onClick = { onCellClick(index) },
                             modifier = Modifier
                                 .weight(1f)
@@ -77,7 +98,10 @@ fun GameBoard(
 
         // Winning Line Overlay
         if (winningCombination != null && winningCombination.size == 3) {
-            WinningLineOverlay(winningCombination = winningCombination)
+            WinningLineOverlay(
+                winningCombination = winningCombination,
+                primaryColor = colorPalette.primary
+            )
         }
     }
 }
@@ -86,23 +110,27 @@ fun GameBoard(
 fun TicTacToeCell(
     player: Player?,
     isWinningCell: Boolean,
+    colorPalette: ColorPalette,
+    boardStyle: BoardStyle,
+    markerStyle: MarkerStyle,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val containerColor = when {
-        isWinningCell -> MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)
-        else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
+    val cellBg = when {
+        isWinningCell -> colorPalette.primary.copy(alpha = 0.35f)
+        boardStyle == BoardStyle.GLASS -> colorPalette.background.copy(alpha = 0.5f)
+        else -> colorPalette.background
     }
 
     val borderColor = when {
-        isWinningCell -> MaterialTheme.colorScheme.primary
-        else -> MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
+        isWinningCell -> colorPalette.primary
+        else -> colorPalette.primary.copy(alpha = 0.2f)
     }
 
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
-            .background(containerColor)
+            .background(cellBg)
             .border(1.5.dp, borderColor, RoundedCornerShape(16.dp))
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
@@ -114,27 +142,38 @@ fun TicTacToeCell(
                 label = "cellScale"
             )
 
+            val symbol = if (player == Player.X) markerStyle.xSymbol else markerStyle.oSymbol
+            val tintColor = if (player == Player.X) colorPalette.primary else colorPalette.secondary
+
             AnimatedVisibility(
                 visible = true,
                 enter = fadeIn() + scaleIn(initialScale = 0.3f)
             ) {
-                if (player == Player.X) {
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = "Player X",
-                        tint = PrimaryCyan,
-                        modifier = Modifier
-                            .size(56.dp)
-                            .scale(scale)
-                    )
+                if (markerStyle == MarkerStyle.CLASSIC) {
+                    if (player == Player.X) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Player X",
+                            tint = tintColor,
+                            modifier = Modifier
+                                .size(52.dp)
+                                .scale(scale)
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Outlined.RadioButtonUnchecked,
+                            contentDescription = "Player O",
+                            tint = tintColor,
+                            modifier = Modifier
+                                .size(46.dp)
+                                .scale(scale)
+                        )
+                    }
                 } else {
-                    Icon(
-                        imageVector = Icons.Outlined.RadioButtonUnchecked,
-                        contentDescription = "Player O",
-                        tint = SecondaryCoral,
-                        modifier = Modifier
-                            .size(50.dp)
-                            .scale(scale)
+                    Text(
+                        text = symbol,
+                        fontSize = 36.sp,
+                        modifier = Modifier.scale(scale)
                     )
                 }
             }
@@ -143,9 +182,7 @@ fun TicTacToeCell(
 }
 
 @Composable
-fun WinningLineOverlay(winningCombination: List<Int>) {
-    val primaryColor = MaterialTheme.colorScheme.primary
-
+fun WinningLineOverlay(winningCombination: List<Int>, primaryColor: Color) {
     Canvas(modifier = Modifier.fillMaxSize()) {
         val width = size.width
         val height = size.height

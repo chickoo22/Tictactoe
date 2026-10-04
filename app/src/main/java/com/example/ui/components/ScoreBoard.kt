@@ -13,20 +13,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.model.ColorPalette
 import com.example.model.GameMode
+import com.example.model.MarkerStyle
 import com.example.model.Player
 import com.example.model.ScoreState
-import com.example.ui.theme.PrimaryCyan
-import com.example.ui.theme.SecondaryCoral
 
 @Composable
 fun ScoreBoard(
     scoreState: ScoreState,
     currentPlayer: Player,
     gameMode: GameMode,
+    colorPalette: ColorPalette,
+    markerStyle: MarkerStyle,
     playerXName: String = "Player X",
     playerOName: String = "Player O",
     modifier: Modifier = Modifier
@@ -37,8 +40,11 @@ fun ScoreBoard(
     val xScale by animateFloatAsState(targetValue = if (xActive) 1.05f else 1.0f, animationSpec = spring(), label = "xScale")
     val oScale by animateFloatAsState(targetValue = if (oActive) 1.05f else 1.0f, animationSpec = spring(), label = "oScale")
 
-    val oLabel = if (gameMode == GameMode.AI) "AI (O)" else "$playerOName (O)"
-    val xLabel = "$playerXName (X)"
+    val xSymbol = markerStyle.xSymbol
+    val oSymbol = markerStyle.oSymbol
+
+    val xLabel = "$playerXName ($xSymbol)"
+    val oLabel = if (gameMode == GameMode.AI) "AI ($oSymbol)" else "$playerOName ($oSymbol)"
 
     Row(
         modifier = modifier
@@ -51,19 +57,19 @@ fun ScoreBoard(
             title = xLabel,
             score = scoreState.xWins,
             isActive = xActive,
-            activeColor = PrimaryCyan,
+            activeColor = colorPalette.primary,
+            surfaceColor = colorPalette.surface,
             scale = xScale,
-            modifier = Modifier.weight(1f),
-            testTag = "score_card_x"
+            modifier = Modifier.weight(1f)
         )
 
         // Ties Card
         Card(
             modifier = Modifier
-                .weight(0.8f)
+                .weight(0.7f)
                 .height(84.dp),
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            colors = CardDefaults.cardColors(containerColor = colorPalette.surface)
         ) {
             Column(
                 modifier = Modifier
@@ -75,7 +81,7 @@ fun ScoreBoard(
                 Text(
                     text = "Ties",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = colorPalette.primary.copy(alpha = 0.7f),
                     fontSize = 12.sp
                 )
                 Spacer(modifier = Modifier.height(2.dp))
@@ -83,7 +89,7 @@ fun ScoreBoard(
                     text = "${scoreState.ties}",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface,
+                    color = colorPalette.primary,
                     fontSize = 22.sp
                 )
             }
@@ -94,10 +100,10 @@ fun ScoreBoard(
             title = oLabel,
             score = scoreState.oWins,
             isActive = oActive,
-            activeColor = SecondaryCoral,
+            activeColor = colorPalette.secondary,
+            surfaceColor = colorPalette.surface,
             scale = oScale,
-            modifier = Modifier.weight(1f),
-            testTag = "score_card_o"
+            modifier = Modifier.weight(1f)
         )
     }
 }
@@ -107,12 +113,12 @@ fun ScoreCard(
     title: String,
     score: Int,
     isActive: Boolean,
-    activeColor: androidx.compose.ui.graphics.Color,
+    activeColor: Color,
+    surfaceColor: Color,
     scale: Float,
-    modifier: Modifier = Modifier,
-    testTag: String
+    modifier: Modifier = Modifier
 ) {
-    val borderColor = if (isActive) activeColor else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+    val borderColor = if (isActive) activeColor else activeColor.copy(alpha = 0.3f)
     val borderWidth = if (isActive) 2.dp else 1.dp
 
     Card(
@@ -122,7 +128,7 @@ fun ScoreCard(
             .border(borderWidth, borderColor, RoundedCornerShape(16.dp)),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isActive) activeColor.copy(alpha = 0.12f) else MaterialTheme.colorScheme.surface
+            containerColor = if (isActive) activeColor.copy(alpha = 0.15f) else surfaceColor
         )
     ) {
         Column(
@@ -135,7 +141,7 @@ fun ScoreCard(
             Text(
                 text = title,
                 style = MaterialTheme.typography.bodyMedium,
-                color = if (isActive) activeColor else MaterialTheme.colorScheme.onSurfaceVariant,
+                color = if (isActive) activeColor else activeColor.copy(alpha = 0.7f),
                 fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal,
                 fontSize = 12.sp,
                 maxLines = 1
@@ -145,7 +151,7 @@ fun ScoreCard(
                 text = "$score",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
-                color = if (isActive) activeColor else MaterialTheme.colorScheme.onSurface,
+                color = if (isActive) activeColor else activeColor.copy(alpha = 0.9f),
                 fontSize = 22.sp
             )
         }
